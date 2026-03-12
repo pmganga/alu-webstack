@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-# Displays information about subdomains (Record type and Destination IP)
+# Audits a domain name and displays information about its subdomains
 
-get_subdomain_info() {
-    local domain=$1
-    local sub=$2
-    # shellcheck disable=SC2086
-    dig "$sub.$domain" | awk -v sub="$sub" '/^;; ANSWER SECTION:/{getline; print "The subdomain " sub " is a " $4 " record and points to " $5}'
+# shellcheck disable=SC2086
+
+display_subdomain() {
+    local subdomain=$1
+    local dom=$2
+    
+    # Passing the variable as 'sub_name' to avoid the reserved 'sub' keyword in awk
+    dig "$subdomain.$dom" A +noall +answer | awk -v sub_name="$subdomain" '{print "The subdomain " sub_name " is a " $4 " record and points to " $5}'
 }
 
 if [ "$#" -eq 1 ]; then
-    # Loop through the specific subdomains in the requested order
-    for sub in www lb-01 web-01 web-02; do
-        get_subdomain_info "$1" "$sub"
-    done
+    display_subdomain "www" "$1"
+    display_subdomain "lb-01" "$1"
+    display_subdomain "web-01" "$1"
+    display_subdomain "web-02" "$1"
 elif [ "$#" -eq 2 ]; then
-    # Audit only the specific subdomain provided
-    get_subdomain_info "$1" "$2"
+    display_subdomain "$2" "$1"
+else
+    exit 1
 fi
