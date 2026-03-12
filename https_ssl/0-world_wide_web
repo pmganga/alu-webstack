@@ -7,8 +7,8 @@ display_subdomain() {
     local subdomain=$1
     local dom=$2
     
-    # Passing the variable as 'sub_name' to avoid the reserved 'sub' keyword in awk
-    dig "$subdomain.$dom" A +noall +answer | awk -v sub_name="$subdomain" '{print "The subdomain " sub_name " is a " $4 " record and points to " $5}'
+    # The $4 == "A" condition forces awk to ignore dig headers and only parse the actual A record
+    dig "$subdomain.$dom" A | awk -v sub_name="$subdomain" '$4 == "A" {print "The subdomain " sub_name " is a " $4 " record and points to " $5}'
 }
 
 if [ "$#" -eq 1 ]; then
