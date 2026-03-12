@@ -1,0 +1,23 @@
+global
+    daemon
+    maxconn 256
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+# NEW: Catch HTTP traffic on port 80 and force a 301 redirect
+frontend www-http
+    bind *:80
+    http-request redirect scheme https code 301 unless { ssl_fc }
+
+frontend www-https
+    bind *:443 ssl crt /etc/haproxy/certs/www.thephilip.tech.pem
+    default_backend web-backend
+
+backend web-backend
+    balance roundrobin
+    server web-01 34.226.148.128:80 check
+    server web-02 44.204.151.244:80 check
