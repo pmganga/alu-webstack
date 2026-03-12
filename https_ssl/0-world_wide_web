@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Displays information about subdomains (Record type and Destination IP)
+
+get_subdomain_info() {
+    local domain=$1
+    local sub=$2
+    # shellcheck disable=SC2086
+    dig "$sub.$domain" | awk -v sub="$sub" '/^;; ANSWER SECTION:/{getline; print "The subdomain " sub " is a " $4 " record and points to " $5}'
+}
+
+if [ "$#" -eq 1 ]; then
+    # Loop through the specific subdomains in the requested order
+    for sub in www lb-01 web-01 web-02; do
+        get_subdomain_info "$1" "$sub"
+    done
+elif [ "$#" -eq 2 ]; then
+    # Audit only the specific subdomain provided
+    get_subdomain_info "$1" "$2"
+fi
